@@ -1,9 +1,9 @@
 package com.zzx.FromZerotoExpert.controller;
 
+import com.zzx.FromZerotoExpert.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +15,9 @@ import java.util.Date;
 
 @Controller
 public class UserController {
+    @Autowired
+    UserService userService;
+
     @GetMapping("/test")
     @ResponseBody
     public String test(){
@@ -91,6 +94,42 @@ public class UserController {
             response.addCookie(cookie);
             response.getWriter().write("嗨，欢迎您来到from zero to expert.");
         }
-
     }
+
+    /**
+     * 登录界面开发
+     * @return
+     */
+    @RequestMapping("/login")
+    public String show(){
+        return "login";//导入依赖就能跳转
+    }
+
+    /**
+     * 注册接口开发
+     * @param name
+     * @param password
+     * @return
+     */
+    @RequestMapping(value = "/loginIn",method = RequestMethod.POST)
+    public String register(String name,String password){
+        String register = userService.check(name, password);
+        if(register.equals("success")){
+            return "success";
+        }else {
+            return "error";
+        }
+    }
+
+    @RequestMapping("/signup")
+    public String disp(){
+        return "signup";
+    }
+
+    @RequestMapping(value = "/register",method = RequestMethod.POST)
+    public String signUp(String name,String password){
+        userService.Insert(name, password);
+        return "success";
+    }
+
 }
