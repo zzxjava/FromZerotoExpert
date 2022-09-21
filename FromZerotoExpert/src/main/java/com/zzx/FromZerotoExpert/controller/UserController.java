@@ -4,6 +4,9 @@ import com.zzx.FromZerotoExpert.common.Result;
 import com.zzx.FromZerotoExpert.model.dao.UserMapper;
 import com.zzx.FromZerotoExpert.model.pojo.User;
 import com.zzx.FromZerotoExpert.service.UserService;
+import com.zzx.FromZerotoExpert.utils.MD5Utils;
+import com.zzx.FromZerotoExpert.utils.PasswordValidator;
+import com.zzx.FromZerotoExpert.utils.SensitiveFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -24,7 +28,8 @@ public class UserController {
     UserService userService;
     @Autowired
     UserMapper userMapper;
-
+    @Autowired
+    private SensitiveFilter sensitiveFilter;
 
     @GetMapping("/test")
     @ResponseBody
@@ -126,16 +131,35 @@ public class UserController {
     @PostMapping("/register")
     @ResponseBody
     public Result<User> register(@RequestBody User user){
-        User result = userMapper.selectByUsernameAndPassword(user);
+        User result = userMapper.selectByName(user.getUsername());
         if(result != null){
             //说明数据库中已经创建了该用户
             return Result.error("10", "用户名已注册");
         }
-        int count= userMapper.insertSelective(user);//插入数据库
-        if(count == 0){
-            return Result.error("-3", "注册失败");
+        //对注册的名字进行敏感词过滤
+        String filter = sensitiveFilter.filter(user.getUsername());
+        if(!filter.equals(user.getUsername())){
+            return Result.error("-5", "用户名含有敏感词");
         }
-        return Result.success("1","注册成功",user);
+        //对密码长度，字符，大小写进行要求
+        boolean valid = PasswordValidator.isValid(user.getPassword());
+        if(valid == true){
+            //给密码进行md5加密
+            try {
+                user.setPassword(MD5Utils.getMD5str(user.getPassword()));
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+
+            int count= userMapper.insertSelective(user);//插入数据库
+            if(count == 0){
+                return Result.error("-3", "注册失败");
+            }
+            return Result.success("1","注册成功",user);
+        }else {
+            return Result.error("-4", "密码强度弱，必须包含大小写和数字");
+        }
+
     }
 
 
@@ -158,7 +182,18 @@ public class UserController {
         }
 
         //验证密码，注册的时候进行加密处理
+        try {
+            user.setPassword(MD5Utils.getMD5str(user.getPassword()));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
 
+        //去数据库查询
+        User userOld = userMapper.selectByUsernameAndPassword(user);
+        if(userOld == null){
+            //说明登录失败
+            return Result.error("-3", "登录失败");
+        }
         return Result.success(dbUser);
     }
 
