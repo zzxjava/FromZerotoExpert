@@ -2,6 +2,7 @@ package com.zzx.FromZerotoExpert.model.dao;
 
 import com.zzx.FromZerotoExpert.model.pojo.User;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 @Component
@@ -18,6 +19,7 @@ public interface UserMapper {
 
     int updateByPrimaryKey(User record);
 
-    /*根据姓名查询*/
-    int selectByUser(String username,String password);
+    User selectByUsernameAndPassword(User user);
+
+    User selectByName(String userName);
 }

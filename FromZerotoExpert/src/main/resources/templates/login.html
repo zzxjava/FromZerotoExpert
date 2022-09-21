@@ -2,18 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="../static/css/login.css"/>
     <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="/css/login.css"/>
+    <script src="/js/login.js"></script>
+    <script type="text/javascript"src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <!--<script type="text/javascript" src="jquery.min.js"></script>-->
 </head>
 <body>
 
-<form role="form" action = "/loginIn" method="post">
+<!--<form role="form" action = "/loginIn" method="post">
     账号：<input type="text" id="name" name = "name"> <br>
     密码：<input type="password" id = "password" name = "password"> <br>
     <input type="submit" id = "login" value = "登录">
 </form>
 <form role="form1" action="/signup" method="post">
     <input type="submit" id="register" value="注册">
-</form>
+</form>-->
+
+<div class="login-control">
+    <div class="login-menu">
+        <div class="login-title">欢迎登录</div>
+        <div class="login-username">
+            <input type="text" id="username" placeholder="请输入账号">
+        </div>
+        <div class="login-password">
+            <input type="password" id="password" placeholder="请输入密码">
+        </div>
+        <div class="login-enter">
+            <button type="button" id="btn" onclick="login()">登录</button>
+        </div>
+        <div class="login-register">
+            <button type="button" id="reg">注册</button>
+        </div>
+    </div>
+</div>
 </body>
+<script type="text/javascript">
+    document.getElementById("reg").onclick = function () {
+        $(location).attr('href', 'http://localhost:8081/user/registerShow');
+    }
+</script>
 </html>

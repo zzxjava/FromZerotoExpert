@@ -69,7 +69,7 @@
     where id = #{id,jdbcType=INTEGER}
   </update>
 
-  <select id="selectByUser" parameterType="map">
+  <select id="selectByUsernameAndPassword" resultType="com.zzx.FromZerotoExpert.model.pojo.User">
     select
     <include refid="Base_Column_List"/>
     from user
@@ -77,4 +77,10 @@
     and password = #{password}
   </select>
 
+  <select id="selectByName" parameterType="java.lang.String" resultType="com.zzx.FromZerotoExpert.model.pojo.User">
+    select
+    <include refid="Base_Column_List"/>
+    from user
+    where username = #{userName,jdbcType=VARCHAR}
+  </select>
 </mapper>

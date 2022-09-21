@@ -1,5 +1,6 @@
 package com.zzx.FromZerotoExpert.service.impl;
 
+import com.zzx.FromZerotoExpert.common.Result;
 import com.zzx.FromZerotoExpert.model.dao.UserMapper;
 import com.zzx.FromZerotoExpert.model.pojo.User;
 import com.zzx.FromZerotoExpert.service.UserService;
@@ -11,29 +12,30 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UserMapper userMapper;
 
+    /**
+     * 登录检查接口
+     * @param
+     * @return
+     */
     @Override
-    public String check(String name, String password){
-        //检查数据库中是否有数据
-        int i = userMapper.selectByUser(name, password);
-        if(i == 0){
-            return "error";
-        }else {
-            return "success";
-        }
-    }
-
-    @Override
-    public String Insert(String name, String password){
+    public Result<User> check(String username, String password){
         //插入数据到数据库中
         User user = new User();
-        user.setUsername(name);
+        user.setUsername(username);
         user.setPassword(password);
-        int i = userMapper.insertSelective(user);//插入数据库
-        if(i == 0){
-            return "error";
-        }else {
-            return "success";
+        System.out.println(user);
+        //检查是否传入数据
+        if(user.getUsername() == null || user.getPassword() == null){
+            return Result.error("-1", "缺少必要参数");
         }
+        //检查传入的参数在数据库中是否存在
+        User dbUser = userMapper.selectByUsernameAndPassword(user);
+        if(dbUser == null){
+            return Result.error("-1", "账号密码错误");
+        }
+        return Result.success(dbUser);
     }
+
+
 
 }

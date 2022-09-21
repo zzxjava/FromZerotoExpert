@@ -1,8 +1,9 @@
 package com.zzx.FromZerotoExpert.service;
 
+import com.zzx.FromZerotoExpert.common.Result;
+import com.zzx.FromZerotoExpert.model.pojo.User;
+
 public interface UserService {
 
-    String check(String name, String password);
-
-    String Insert(String name, String password);
+    Result<User> check(String username, String password);
 }

@@ -1,5 +1,8 @@
 package com.zzx.FromZerotoExpert.controller;
 
+import com.zzx.FromZerotoExpert.common.Result;
+import com.zzx.FromZerotoExpert.model.dao.UserMapper;
+import com.zzx.FromZerotoExpert.model.pojo.User;
 import com.zzx.FromZerotoExpert.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -8,15 +11,20 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Controller
+@RequestMapping("/user")
 public class UserController {
     @Autowired
     UserService userService;
+    @Autowired
+    UserMapper userMapper;
+
 
     @GetMapping("/test")
     @ResponseBody
@@ -96,40 +104,67 @@ public class UserController {
         }
     }
 
-    /**
-     * 登录界面开发
-     * @return
-     */
-    @RequestMapping("/login")
-    public String show(){
-        return "login";//导入依赖就能跳转
+
+    @GetMapping("/")
+    public String helloYou(){
+        return "login";     // login是页面
+    }
+
+    @GetMapping("/registerShow")
+    public String registerShow(){
+        return "register";
     }
 
     /**
-     * 注册接口开发
-     * @param name
-     * @param password
+     * 注册接口
+     * Post请求只能用@RequestBody注解，传入json数据，不能用@RequestParam进行传
+     * 1、多用户同时注册，防止用户名重复的
+     * @param
+     * @param
      * @return
      */
-    @RequestMapping(value = "/loginIn",method = RequestMethod.POST)
-    public String register(String name,String password){
-        String register = userService.check(name, password);
-        if(register.equals("success")){
-            return "success";
-        }else {
-            return "error";
+    @PostMapping("/register")
+    @ResponseBody
+    public Result<User> register(@RequestBody User user){
+        User result = userMapper.selectByUsernameAndPassword(user);
+        if(result != null){
+            //说明数据库中已经创建了该用户
+            return Result.error("10", "用户名已注册");
         }
+        int count= userMapper.insertSelective(user);//插入数据库
+        if(count == 0){
+            return Result.error("-3", "注册失败");
+        }
+        return Result.success("1","注册成功",user);
     }
 
-    @RequestMapping("/signup")
-    public String disp(){
-        return "signup";
+
+    /**
+     * 登录接口设计
+     * @param user
+     * @return
+     */
+    @PostMapping("/login")
+    @ResponseBody
+    public Result<User> login(@RequestBody User user) {
+        //对传入的参数进行非空处理
+        if (!checkParam(user)) {
+            return Result.error("-1", "缺少必要参数");
+        }
+        //验证账号（这里只对用户名进行验证）
+        User dbUser = userMapper.selectByName(user.getUsername());
+        if (dbUser == null) {
+            return Result.error("-2", "该账号不存在");
+        }
+
+        //验证密码，注册的时候进行加密处理
+
+        return Result.success(dbUser);
     }
 
-    @RequestMapping(value = "/register",method = RequestMethod.POST)
-    public String signUp(String name,String password){
-        userService.Insert(name, password);
-        return "success";
+    private boolean checkParam(User user) {
+        return user.getUsername() != null && user.getPassword() != null;
     }
+
 
 }
